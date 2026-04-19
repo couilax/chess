@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Satrançta 39 Puan</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard.js/1.0.0/chessboard-1.0.0.min.css" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      color: #4b5563;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .badge {
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 600;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 480px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: left;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .piece-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #111827;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.92;
+    }
+
+    button.secondary {
+      background: #374151;
+    }
+
+    button.danger {
+      background: #b91c1c;
+    }
+
+    button.light {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .selected {
+      outline: 3px solid #2563eb;
+    }
+
+    #board {
+      width: 480px;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .row {
+      margin-bottom: 10px;
+      line-height: 1.55;
+    }
+
+    .small {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .list {
+      margin: 0;
+      padding-left: 18px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1000px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      #board {
+        width: min(92vw, 480px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Satrançta 39 Puan</h1>
+    <p class="subtitle">İki oyuncu taşlarını kendi ilk iki sırasına dizer, sonra normal satranç kurallarıyla oynar.</p>
+
+    <div class="topbar">
+      <div class="badge" id="status">Durum: Beyaz yerleşim yapıyor</div>
+      <div class="badge" id="turnInfo">Sıra: Beyaz</div>
+      <div class="badge" id="scoreInfo">Puan: Beyaz 0 / 39 — Siyah 0 / 39</div>
+    </div>
+
+    <div class="layout">
+      <div class="panel">
+        <h2>Taş Seçimi</h2>
+        <div class="piece-grid">
+          <button id="btn-p" onclick="selectPiece('p')">Piyon (1)</button>
+          <button id="btn-n" onclick="selectPiece('n')">At (3)</button>
+          <button id="btn-b" onclick="selectPiece('b')">Fil (3)</button>
+          <button id="btn-r" onclick="selectPiece('r')">Kale (5)</button>
+          <button id="btn-q" onclick="selectPiece('q')">Vezir (9)</button>
+          <button id="btn-k" onclick="selectPiece('k')">Şah (0)</button>
+        </div>
+
+        <div class="actions">
+          <button class="danger" id="btn-remove" onclick="selectRemove()">Silme Modu</button>
+          <button class="secondary" onclick="confirmSetup()">Yerleşimi Bitir</button>
+          <button class="light" onclick="resetAll()">Baştan Başlat</button>
+        </div>
+
+        <div class="row" style="margin-top: 16px;">
+          <strong>Aktif seçim:</strong> <span id="selectedInfo">Yok</span>
+        </div>
+        <div class="small">
+          Kurulumda taş eklemek veya silmek için tahtaya sürükle-bırak yap.
+        </div>
+      </div>
+
+      <div>
+        <div id="board"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Kurallar</h2>
+        <ul class="list">
+          <li>Beyaz yalnızca 1. ve 2. sıraya yerleştirebilir.</li>
+          <li>Siyah yalnızca 7. ve 8. sıraya yerleştirebilir.</li>
+          <li>Her oyuncunun toplam taş puanı en fazla 39 olabilir.</li>
+          <li>Her oyuncu en az 1 şah koymak zorundadır.</li>
+          <li>Kurulum bitince oyun normal satranç kurallarıyla başlar.</li>
+        </ul>
+
+        <div class="row" style="margin-top: 16px;">
+          <strong>Not:</strong>
+          Piyon=1, At=3, Fil=3, Kale=5, Vezir=9, Şah=0
+        </div>
+
+        <div class="row small" id="messageBox">
+          Mesaj: Hazır.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard.js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+  <script>
+    let board;
+    let game;
+
+    const values = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+    const labels = {
+      p: "Piyon",
+      n: "At",
+      b: "Fil",
+      r: "Kale",
+      q: "Vezir",
+      k: "Şah"
+    };
+
+    let phase = "white_setup"; // white_setup, black_setup, play
+    let selectedPiece = null;
+    let removeMode = false;
+    let scores = { w: 0, b: 0 };
+
+    function setMessage(text) {
+      document.getElementById("messageBox").textContent = "Mesaj: " + text;
+    }
+
+    function updateUI() {
+      const status = document.getElementById("status");
+      const turnInfo = document.getElementById("turnInfo");
+      const scoreInfo = document.getElementById("scoreInfo");
+      const selectedInfo = document.getElementById("selectedInfo");
+
+      if (phase === "white_setup") {
+        status.textContent = "Durum: Beyaz yerleşim yapıyor";
+        turnInfo.textContent = "Sıra: Beyaz";
+      } else if (phase === "black_setup") {
+        status.textContent = "Durum: Siyah yerleşim yapıyor";
+        turnInfo.textContent = "Sıra: Siyah";
+      } else {
+        status.textContent = "Durum: Oyun başladı";
+        turnInfo.textContent = "Sıra: " + (game.turn() === "w" ? "Beyaz" : "Siyah");
+      }
+
+      scoreInfo.textContent = `Puan: Beyaz ${scores.w} / 39 — Siyah ${scores.b} / 39`;
+
+      if (removeMode) {
+        selectedInfo.textContent = "Silme modu";
+      } else if (selectedPiece) {
+        selectedInfo.textContent = labels[selectedPiece];
+      } else {
+        selectedInfo.textContent = "Yok";
+      }
+
+      document.querySelectorAll(".piece-grid button, #btn-remove").forEach(btn => btn.classList.remove("selected"));
+
+      if (removeMode) {
+        document.getElementById("btn-remove").classList.add("selected");
+      } else if (selectedPiece) {
+        const btn = document.getElementById("btn-" + selectedPiece);
+        if (btn) btn.classList.add("selected");
+      }
+    }
+
+    function currentSetupColor() {
+      return phase === "white_setup" ? "w" : "b";
+    }
+
+    function isValidSetupSquare(square, color) {
+      const rank = parseInt(square[1], 10);
+      if (color === "w") return rank === 1 || rank === 2;
+      if (color === "b") return rank === 7 || rank === 8;
+      return false;
+    }
+
+    function countKings(color) {
+      return game.board().flat().filter(p => p && p.type === "k" && p.color === color).length;
+    }
+
+    function recalcScores() {
+      scores = { w: 0, b: 0 };
+      const flat = game.board().flat();
+
+      for (const piece of flat) {
+        if (!piece) continue;
+        scores[piece.color] += values[piece.type];
+      }
+    }
+
+    function selectPiece(piece) {
+      selectedPiece = piece;
+      removeMode = false;
+      updateUI();
+    }
+
+    function selectRemove() {
+      removeMode = true;
+      selectedPiece = null;
+      updateUI();
+    }
+
+    function resetAll() {
+      game = new Chess();
+      phase = "white_setup";
+      selectedPiece = null;
+      removeMode = false;
+      scores = { w: 0, b: 0 };
+      board.position("8/8/8/8/8/8/8/8");
+      setMessage("Tahta sıfırlandı.");
+      updateUI();
+    }
+
+    function tryPlacePiece(square) {
+      const color = currentSetupColor();
+
+      if (!selectedPiece) {
+        setMessage("Önce bir taş seç.");
+        return false;
+      }
+
+      if (!isValidSetupSquare(square, color)) {
+        setMessage("Taşı yalnızca kendi ilk iki sırana koyabilirsin.");
+        return false;
+      }
+
+      const existing = game.get(square);
+      if (existing && existing.color !== color) {
+        setMessage("Rakibin alanına yerleşim yapamazsın.");
+        return false;
+      }
+
+      let nextScore = scores[color];
+
+      if (existing && existing.color === color) {
+        nextScore -= values[existing.type];
+      }
+
+      nextScore += values[selectedPiece];
+
+      if (nextScore > 39) {
+        setMessage("39 puanı geçemezsin.");
+        return false;
+      }
+
+      if (existing) game.remove(square);
+      game.put({ type: selectedPiece, color: color }, square);
+      recalcScores();
+      board.position(game.fen(), false);
+      setMessage(labels[selectedPiece] + " yerleştirildi: " + square);
+      updateUI();
+      return true;
+    }
+
+    function tryRemovePiece(square) {
+      const color = currentSetupColor();
+      const existing = game.get(square);
+
+      if (!existing) {
+        setMessage("Silinecek taş yok.");
+        return false;
+      }
+
+      if (existing.color !== color) {
+        setMessage("Sadece kendi taşını silebilirsin.");
+        return false;
+      }
+
+      game.remove(square);
+      recalcScores();
+      board.position(game.fen(), false);
+      setMessage("Taş silindi: " + square);
+      updateUI();
+      return true;
+    }
+
+    function onDragStart(source, piece) {
+      if (phase === "play") {
+        if ((game.turn() === "w" && piece.startsWith("b")) ||
+            (game.turn() === "b" && piece.startsWith("w"))) {
+          return false;
+        }
+        return true;
+      }
+
+      return true;
+    }
+
+    function onDrop(source, target, piece, newPos, oldPos, orientation) {
+      if (phase === "white_setup" || phase === "black_setup") {
+        if (removeMode) {
+          if (!tryRemovePiece(target)) return "snapback";
+          return;
+        }
+
+        if (!tryPlacePiece(target)) return "snapback";
+        return;
+      }
+
+      const move = game.move({
+        from: source,
+        to: target,
+        promotion: "q"
+      });
+
+      if (move === null) {
+        setMessage("Geçersiz hamle.");
+        return "snapback";
+      }
+
+      board.position(game.fen(), false);
+
+      if (game.in_checkmate()) {
+        setMessage("Şah mat! Kazanan: " + (game.turn() === "w" ? "Siyah" : "Beyaz"));
+      } else if (game.in_draw()) {
+        setMessage("Oyun berabere.");
+      } else if (game.in_check()) {
+        setMessage("Şah var.");
+      } else {
+        setMessage("Hamle yapıldı: " + move.from + " → " + move.to);
+      }
+
+      updateUI();
+    }
+
+    function confirmSetup() {
+      if (phase === "white_setup") {
+        if (countKings("w") !== 1) {
+          setMessage("Beyaz tam olarak 1 şah koymak zorunda.");
+          return;
+        }
+        phase = "black_setup";
+        selectedPiece = null;
+        removeMode = false;
+        setMessage("Şimdi siyah yerleşim yapacak.");
+        updateUI();
+        return;
+      }
+
+      if (phase === "black_setup") {
+        if (countKings("b") !== 1) {
+          setMessage("Siyah tam olarak 1 şah koymak zorunda.");
+          return;
+        }
+
+        phase = "play";
+        selectedPiece = null;
+        removeMode = false;
+        board.position(game.fen(), false);
+        setMessage("Oyun başladı.");
+        updateUI();
+      }
+    }
+
+    window.addEventListener("load", function () {
+      game = new Chess();
+
+      board = Chessboard("board", {
+        draggable: true,
+        dropOffBoard: "snapback",
+        sparePieces: false,
+        position: "8/8/8/8/8/8/8/8",
+        onDragStart: onDragStart,
+        onDrop: onDrop
+      });
+
+      updateUI();
+      setMessage("Hazır.");
+    });
+  </script>
+</body>
+</html>
