@@ -33,9 +33,7 @@
       text-align: center;
     }
 
-    .hidden {
-      display: none !important;
-    }
+    .hidden { display: none !important; }
 
     .screen {
       min-height: 100vh;
@@ -266,17 +264,10 @@
       cursor: pointer;
     }
 
-    .light-square {
-      background: var(--lightSquare);
-    }
+    .light-square { background: var(--lightSquare); }
+    .dark-square { background: var(--darkSquare); }
 
-    .dark-square {
-      background: var(--darkSquare);
-    }
-
-    .cell:hover {
-      filter: brightness(1.05);
-    }
+    .cell:hover { filter: brightness(1.05); }
 
     .allowed {
       box-shadow: inset 0 0 0 4px rgba(59, 130, 246, 0.35);
@@ -347,35 +338,9 @@
       font-size: 17px;
     }
 
-    .winner {
-      color: var(--win);
-      font-weight: 700;
-    }
-
     @media (max-width: 1250px) {
       .layout {
         grid-template-columns: 1fr;
-      }
-
-      .board {
-        width: 560px;
-        height: 560px;
-      }
-
-      .board-frame {
-        grid-template-columns: 24px 560px 24px;
-      }
-    }
-
-    @media (max-width: 700px) {
-      .board,
-      .board-frame {
-        transform: scale(0.82);
-        transform-origin: top center;
-      }
-
-      .board-wrap {
-        margin-bottom: -80px;
       }
     }
   </style>
@@ -460,6 +425,7 @@
             <li>Siyah sadece 7. ve 8. sıraya yerleşebilir.</li>
             <li>Toplam taş puanı en fazla 39 olabilir.</li>
             <li>Her oyuncu tam olarak 1 şah koyabilir.</li>
+            <li>Beyaz piyon 1. sıraya, siyah piyon 8. sıraya konamaz.</li>
             <li>Yerleşim bittikten sonra normal satranç kuralları geçerlidir.</li>
           </ul>
 
@@ -478,15 +444,7 @@
 
   <script>
     const pieceValues = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
-    const pieceNames = {
-      p: "Piyon",
-      n: "At",
-      b: "Fil",
-      r: "Kale",
-      q: "Vezir",
-      k: "Şah"
-    };
-
+    const pieceNames = { p: "Piyon", n: "At", b: "Fil", r: "Kale", q: "Vezir", k: "Şah" };
     const symbols = {
       w: { p: "♙", n: "♘", b: "♗", r: "♖", q: "♕", k: "♔" },
       b: { p: "♟", n: "♞", b: "♝", r: "♜", q: "♛", k: "♚" }
@@ -595,10 +553,7 @@
       const whiteClock = document.getElementById("whiteClock");
       const blackClock = document.getElementById("blackClock");
 
-      if (phase === "white_setup") {
-        whiteClock.textContent = "Beyaz " + formatTime(whiteSetupTime);
-        blackClock.textContent = "Siyah " + formatTime(blackSetupTime);
-      } else if (phase === "black_setup") {
+      if (phase === "white_setup" || phase === "black_setup") {
         whiteClock.textContent = "Beyaz " + formatTime(whiteSetupTime);
         blackClock.textContent = "Siyah " + formatTime(blackSetupTime);
       } else {
@@ -611,7 +566,6 @@
 
       if (phase === "white_setup") whiteClock.classList.add("active-clock");
       if (phase === "black_setup") blackClock.classList.add("active-clock");
-
       if (phase === "play") {
         if (game.turn() === "w") whiteClock.classList.add("active-clock");
         else blackClock.classList.add("active-clock");
@@ -635,8 +589,10 @@
         turnInfo.textContent = "Sıra: " + colorName(game.turn());
       } else if (phase === "gameover") {
         status.textContent = "Durum: Oyun bitti";
+        turnInfo.textContent = "Sıra: -";
       } else {
         status.textContent = "Durum: Hazır";
+        turnInfo.textContent = "Sıra: Beyaz";
       }
 
       scoreInfo.textContent = `Puan: Beyaz ${scores.w} / 39 — Siyah ${scores.b} / 39`;
@@ -655,7 +611,6 @@
       document.getElementById("blackKingCount").textContent = countKings("b");
 
       document.querySelectorAll(".piece-btn, #btn-remove").forEach(btn => btn.classList.remove("selected"));
-
       if (phase === "white_setup" || phase === "black_setup") {
         if (removeMode) {
           document.getElementById("btn-remove").classList.add("selected");
@@ -690,11 +645,8 @@
 
           const targetData = legalTargets.find(t => t.to === coord);
           if (targetData) {
-            if (targetData.flags.includes("c") || targetData.flags.includes("e")) {
-              cell.classList.add("capture-ring");
-            } else {
-              cell.classList.add("move-dot");
-            }
+            if (targetData.flags.includes("c") || targetData.flags.includes("e")) cell.classList.add("capture-ring");
+            else cell.classList.add("move-dot");
           }
 
           const piece = boardState[r][c];
@@ -736,35 +688,25 @@
       if (countKings(color) === 1) return;
 
       const preferred = color === "w"
-        ? ["e1", "d1", "c1", "f1", "e2", "d2", "c2", "f2"]
-        : ["e8", "d8", "c8", "f8", "e7", "d7", "c7", "f7"];
+        ? ["e1","d1","f1","e2","d2","f2","c1","c2"]
+        : ["e8","d8","f8","e7","d7","f7","c8","c7"];
 
       for (const sq of preferred) {
         const { r, c } = coordToSquare(sq);
         const existing = boardState[r][c];
-        if (!existing) {
-          boardState[r][c] = { color, type: "k" };
-          recalcScores();
-          return;
-        }
-        if (existing.color === color) {
-          scores[color] -= pieceValues[existing.type];
+        if (!existing || existing.color === color) {
           boardState[r][c] = { color, type: "k" };
           recalcScores();
           return;
         }
       }
+    }
 
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-          if (!allowedRow(r, color)) continue;
-          if (!boardState[r][c]) {
-            boardState[r][c] = { color, type: "k" };
-            recalcScores();
-            return;
-          }
-        }
-      }
+    function isIllegalPawnPlacement(r, pieceType, color) {
+      if (pieceType !== "p") return false;
+      if (color === "w" && r === 7) return true;
+      if (color === "b" && r === 0) return true;
+      return false;
     }
 
     function handleSetupClick(r, c) {
@@ -798,6 +740,13 @@
 
       if (!selectedPiece) {
         setMessage("Önce bir taş seç.");
+        return;
+      }
+
+      if (isIllegalPawnPlacement(r, selectedPiece, color)) {
+        setMessage(color === "w"
+          ? "Beyaz piyon 1. sıraya konamaz."
+          : "Siyah piyon 8. sıraya konamaz.");
         return;
       }
 
@@ -844,10 +793,7 @@
               fen += empty;
               empty = 0;
             }
-            const symbol = piece.color === "w"
-              ? piece.type.toUpperCase()
-              : piece.type.toLowerCase();
-            fen += symbol;
+            fen += piece.color === "w" ? piece.type.toUpperCase() : piece.type.toLowerCase();
           }
         }
         if (empty > 0) fen += empty;
@@ -865,8 +811,7 @@
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
           const piece = gBoard[r][c];
-          if (!piece) continue;
-          boardState[r][c] = { color: piece.color, type: piece.type };
+          if (piece) boardState[r][c] = { color: piece.color, type: piece.type };
         }
       }
 
@@ -874,11 +819,30 @@
     }
 
     function startPlayPhase() {
+      if (typeof Chess !== "function") {
+        setMessage("chess.js yüklenemedi. Sayfayı yenileyip tekrar dene.");
+        return;
+      }
+
       ensureKing("w");
       ensureKing("b");
 
       const fen = buildFenFromBoard();
-      game = new Chess(fen);
+
+      try {
+        const tempGame = new Chess();
+        const loaded = tempGame.load(fen);
+
+        if (!loaded) {
+          setMessage("Bu dizilim chess.js için geçersiz. Piyonların son sırada olmadığından ve şahların geçerli olduğundan emin ol.");
+          return;
+        }
+
+        game = tempGame;
+      } catch (err) {
+        setMessage("Oyun başlatılırken hata oluştu: " + err.message);
+        return;
+      }
 
       phase = "play";
       selectedPiece = null;
@@ -935,7 +899,7 @@
 
       if (color === "b" && phase === "black_setup") {
         startPlayPhase();
-        setMessage("Siyahın süresi bitti. Oyun başladı.");
+        if (phase === "play") setMessage("Siyahın süresi bitti. Oyun başladı.");
       }
     }
 
@@ -975,7 +939,7 @@
         clearSelection();
 
         if (game.in_checkmate()) {
-          endGame("Şah mat! Kazanan: " + colorName(move.color === "w" ? "w" : "b"));
+          endGame("Şah mat! Kazanan: " + colorName(move.color));
           return;
         }
 
