@@ -19,7 +19,7 @@
     }
 
     .container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 24px 16px 40px;
     }
@@ -53,9 +53,10 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 480px 1fr;
-      gap: 20px;
+      grid-template-columns: 280px 520px 280px;
+      gap: 24px;
       align-items: start;
+      justify-content: center;
     }
 
     .panel {
@@ -110,12 +111,22 @@
       outline: 3px solid #2563eb;
     }
 
+    #board-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 520px;
+    }
+
     #board {
-      width: 480px;
+      width: 520px;
+      height: 520px;
+      min-height: 520px;
       margin: 0 auto;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      background: white;
     }
 
     .row {
@@ -140,13 +151,19 @@
       line-height: 1.6;
     }
 
-    @media (max-width: 1000px) {
+    @media (max-width: 1100px) {
       .layout {
         grid-template-columns: 1fr;
       }
 
+      #board-wrap {
+        min-height: auto;
+      }
+
       #board {
-        width: min(92vw, 480px);
+        width: min(92vw, 520px);
+        height: min(92vw, 520px);
+        min-height: min(92vw, 520px);
       }
     }
   </style>
@@ -165,6 +182,7 @@
     <div class="layout">
       <div class="panel">
         <h2>Taş Seçimi</h2>
+
         <div class="piece-grid">
           <button id="btn-p" onclick="selectPiece('p')">Piyon (1)</button>
           <button id="btn-n" onclick="selectPiece('n')">At (3)</button>
@@ -183,12 +201,13 @@
         <div class="row" style="margin-top: 16px;">
           <strong>Aktif seçim:</strong> <span id="selectedInfo">Yok</span>
         </div>
+
         <div class="small">
-          Kurulumda taş eklemek veya silmek için tahtaya sürükle-bırak yap.
+          Kurulum sırasında tahtaya sürükleyip bırak. Silme modunda bir kareye sürükleyerek kendi taşını kaldırabilirsin.
         </div>
       </div>
 
-      <div>
+      <div id="board-wrap">
         <div id="board"></div>
       </div>
 
@@ -198,13 +217,12 @@
           <li>Beyaz yalnızca 1. ve 2. sıraya yerleştirebilir.</li>
           <li>Siyah yalnızca 7. ve 8. sıraya yerleştirebilir.</li>
           <li>Her oyuncunun toplam taş puanı en fazla 39 olabilir.</li>
-          <li>Her oyuncu en az 1 şah koymak zorundadır.</li>
+          <li>Her oyuncu tam olarak 1 şah koymak zorundadır.</li>
           <li>Kurulum bitince oyun normal satranç kurallarıyla başlar.</li>
         </ul>
 
         <div class="row" style="margin-top: 16px;">
-          <strong>Not:</strong>
-          Piyon=1, At=3, Fil=3, Kale=5, Vezir=9, Şah=0
+          <strong>Not:</strong> Piyon=1, At=3, Fil=3, Kale=5, Vezir=9, Şah=0
         </div>
 
         <div class="row small" id="messageBox">
@@ -232,7 +250,7 @@
       k: "Şah"
     };
 
-    let phase = "white_setup"; // white_setup, black_setup, play
+    let phase = "white_setup";
     let selectedPiece = null;
     let removeMode = false;
     let scores = { w: 0, b: 0 };
@@ -321,7 +339,7 @@
       selectedPiece = null;
       removeMode = false;
       scores = { w: 0, b: 0 };
-      board.position("8/8/8/8/8/8/8/8");
+      board.position("8/8/8/8/8/8/8/8", false);
       setMessage("Tahta sıfırlandı.");
       updateUI();
     }
@@ -340,8 +358,9 @@
       }
 
       const existing = game.get(square);
+
       if (existing && existing.color !== color) {
-        setMessage("Rakibin alanına yerleşim yapamazsın.");
+        setMessage("Rakibin taşının üstüne yerleşemezsin.");
         return false;
       }
 
@@ -358,7 +377,10 @@
         return false;
       }
 
-      if (existing) game.remove(square);
+      if (existing) {
+        game.remove(square);
+      }
+
       game.put({ type: selectedPiece, color: color }, square);
       recalcScores();
       board.position(game.fen(), false);
@@ -395,13 +417,15 @@
             (game.turn() === "b" && piece.startsWith("w"))) {
           return false;
         }
-        return true;
       }
-
       return true;
     }
 
-    function onDrop(source, target, piece, newPos, oldPos, orientation) {
+    function onDrop(source, target, piece) {
+      if (target === "offboard") {
+        return "snapback";
+      }
+
       if (phase === "white_setup" || phase === "black_setup") {
         if (removeMode) {
           if (!tryRemovePiece(target)) return "snapback";
@@ -438,12 +462,17 @@
       updateUI();
     }
 
+    function onSnapEnd() {
+      board.position(game.fen(), false);
+    }
+
     function confirmSetup() {
       if (phase === "white_setup") {
         if (countKings("w") !== 1) {
           setMessage("Beyaz tam olarak 1 şah koymak zorunda.");
           return;
         }
+
         phase = "black_setup";
         selectedPiece = null;
         removeMode = false;
@@ -467,21 +496,23 @@
       }
     }
 
-    window.addEventListener("load", function () {
+    window.onload = function () {
       game = new Chess();
 
       board = Chessboard("board", {
         draggable: true,
+        position: "8/8/8/8/8/8/8/8",
         dropOffBoard: "snapback",
         sparePieces: false,
-        position: "8/8/8/8/8/8/8/8",
         onDragStart: onDragStart,
-        onDrop: onDrop
+        onDrop: onDrop,
+        onSnapEnd: onSnapEnd
       });
 
+      board.position("8/8/8/8/8/8/8/8", false);
       updateUI();
       setMessage("Hazır.");
-    });
+    };
   </script>
 </body>
 </html>
