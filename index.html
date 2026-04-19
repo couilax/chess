@@ -4,19 +4,81 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Satrançta 39 Puan</title>
+
   <style>
     * { box-sizing: border-box; }
+
+    :root {
+      --bg: #eef1f5;
+      --panel: #ffffff;
+      --text: #111827;
+      --muted: #4b5563;
+      --border: #d1d5db;
+      --blue: #2563eb;
+      --danger: #c81e1e;
+      --darkBtn: #0f172a;
+      --secondary: #374151;
+      --lightBtn: #e5e7eb;
+      --lightSquare: #f0d9b5;
+      --darkSquare: #b58863;
+      --boardBorder: #1f2937;
+      --win: #16a34a;
+    }
 
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #eef1f5;
-      color: #111827;
+      background: var(--bg);
+      color: var(--text);
       text-align: center;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
+    .screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .home-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px 28px;
+      width: min(520px, 92vw);
+      box-shadow: 0 14px 32px rgba(0,0,0,0.08);
+    }
+
+    .home-card h1 {
+      margin: 0 0 12px;
+      font-size: 42px;
+    }
+
+    .home-card p {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .start-btn {
+      border: none;
+      border-radius: 16px;
+      padding: 18px 28px;
+      font-size: 22px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--darkBtn);
+      color: white;
+    }
+
     .container {
-      max-width: 1280px;
+      max-width: 1320px;
       margin: 0 auto;
       padding: 24px 16px 40px;
     }
@@ -28,7 +90,7 @@
 
     .subtitle {
       margin: 0 0 20px;
-      color: #4b5563;
+      color: var(--muted);
       font-size: 18px;
     }
 
@@ -42,11 +104,21 @@
 
     .badge {
       background: white;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--border);
       border-radius: 14px;
       padding: 12px 16px;
       font-weight: 700;
       box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      min-width: 120px;
+    }
+
+    .clock-badge {
+      font-size: 22px;
+      min-width: 135px;
+    }
+
+    .active-clock {
+      outline: 3px solid var(--blue);
     }
 
     .layout {
@@ -59,7 +131,7 @@
 
     .panel {
       background: white;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--border);
       border-radius: 18px;
       padding: 18px;
       text-align: left;
@@ -85,35 +157,37 @@
       font-weight: 700;
       cursor: pointer;
       transition: 0.15s ease;
+      min-height: 58px;
+      line-height: 1.1;
     }
 
     .piece-btn {
-      background: #0f172a;
+      background: var(--darkBtn);
       color: white;
     }
 
-    .piece-btn:hover, .action-btn:hover {
+    .piece-btn:hover, .action-btn:hover, .start-btn:hover {
       transform: translateY(-1px);
       opacity: 0.96;
     }
 
     .selected {
-      outline: 4px solid #3b82f6;
+      outline: 4px solid var(--blue);
     }
 
     .danger {
-      background: #c81e1e;
+      background: var(--danger);
       color: white;
     }
 
     .secondary {
-      background: #374151;
+      background: var(--secondary);
       color: white;
     }
 
     .light {
-      background: #e5e7eb;
-      color: #111827;
+      background: var(--lightBtn);
+      color: var(--text);
     }
 
     .actions {
@@ -124,7 +198,7 @@
 
     .info-block {
       margin-top: 16px;
-      line-height: 1.6;
+      line-height: 1.7;
       font-size: 16px;
     }
 
@@ -143,14 +217,38 @@
       color: #374151;
       font-weight: 700;
       user-select: none;
+      font-size: 15px;
+    }
+
+    .board-frame {
+      display: grid;
+      grid-template-columns: 24px 560px 24px;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .rank-col {
+      display: grid;
+      grid-template-rows: repeat(8, 70px);
+      color: #374151;
+      font-weight: 700;
+      user-select: none;
+      font-size: 15px;
+    }
+
+    .rank-col div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .board {
       width: 560px;
       height: 560px;
       display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      border: 8px solid #1f2937;
+      grid-template-columns: repeat(8, 70px);
+      grid-template-rows: repeat(8, 70px);
+      border: 8px solid var(--boardBorder);
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 12px 28px rgba(0,0,0,0.14);
@@ -158,29 +256,58 @@
     }
 
     .cell {
+      width: 70px;
+      height: 70px;
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 44px;
-      cursor: pointer;
       user-select: none;
-      position: relative;
+      cursor: pointer;
     }
 
     .light-square {
-      background: #f0d9b5;
+      background: var(--lightSquare);
     }
 
     .dark-square {
-      background: #b58863;
+      background: var(--darkSquare);
     }
 
     .cell:hover {
       filter: brightness(1.05);
     }
 
-    .cell.allowed {
-      box-shadow: inset 0 0 0 4px rgba(59, 130, 246, 0.45);
+    .allowed {
+      box-shadow: inset 0 0 0 4px rgba(59, 130, 246, 0.35);
+    }
+
+    .selected-square {
+      box-shadow: inset 0 0 0 5px rgba(37, 99, 235, 0.8);
+    }
+
+    .move-dot::after {
+      content: "";
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(37, 99, 235, 0.6);
+      position: absolute;
+    }
+
+    .capture-ring::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border: 4px solid rgba(200, 30, 30, 0.8);
+      border-radius: 50%;
+    }
+
+    .piece {
+      font-size: 46px;
+      line-height: 1;
+      z-index: 2;
+      pointer-events: none;
     }
 
     .coord {
@@ -210,6 +337,8 @@
       border-radius: 12px;
       font-size: 15px;
       color: #374151;
+      line-height: 1.5;
+      min-height: 52px;
     }
 
     .legend {
@@ -218,87 +347,134 @@
       font-size: 17px;
     }
 
+    .winner {
+      color: var(--win);
+      font-weight: 700;
+    }
+
     @media (max-width: 1250px) {
       .layout {
         grid-template-columns: 1fr;
       }
 
-      .board, .files-row {
-        width: min(92vw, 560px);
+      .board {
+        width: 560px;
+        height: 560px;
       }
 
-      .board {
-        height: min(92vw, 560px);
+      .board-frame {
+        grid-template-columns: 24px 560px 24px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .board,
+      .board-frame {
+        transform: scale(0.82);
+        transform-origin: top center;
+      }
+
+      .board-wrap {
+        margin-bottom: -80px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Satrançta 39 Puan</h1>
-    <p class="subtitle">İki oyuncu taşlarını kendi ilk iki sırasına dizer. Bu sürüm yerleşim prototipidir.</p>
-
-    <div class="topbar">
-      <div class="badge" id="status">Durum: Beyaz yerleşim yapıyor</div>
-      <div class="badge" id="turnInfo">Sıra: Beyaz</div>
-      <div class="badge" id="scoreInfo">Puan: Beyaz 0 / 39 — Siyah 0 / 39</div>
+  <div id="homeScreen" class="screen">
+    <div class="home-card">
+      <h1>Satrançta 39 Puan</h1>
+      <p>
+        İki oyuncu taşlarını 39 puanı geçmeden kendi ilk iki sırasına dizer,
+        sonra gerçek satranç kurallarıyla oynar.
+      </p>
+      <button class="start-btn" onclick="startMatch()">Oyunu Başlat</button>
     </div>
+  </div>
 
-    <div class="layout">
-      <div class="panel">
-        <h2>Taş Seçimi</h2>
+  <div id="gameScreen" class="hidden">
+    <div class="container">
+      <h1>Satrançta 39 Puan</h1>
+      <p class="subtitle">Yerleşim süresi: kişi başı 1 dakika. Oyun süresi: kişi başı 5 dakika.</p>
 
-        <div class="piece-grid">
-          <button class="piece-btn" id="btn-p" onclick="selectPiece('p')">♟ Piyon (1)</button>
-          <button class="piece-btn" id="btn-n" onclick="selectPiece('n')">♞ At (3)</button>
-          <button class="piece-btn" id="btn-b" onclick="selectPiece('b')">♝ Fil (3)</button>
-          <button class="piece-btn" id="btn-r" onclick="selectPiece('r')">♜ Kale (5)</button>
-          <button class="piece-btn" id="btn-q" onclick="selectPiece('q')">♛ Vezir (9)</button>
-          <button class="piece-btn" id="btn-k" onclick="selectPiece('k')">♚ Şah (0)</button>
-        </div>
-
-        <div class="actions">
-          <button class="action-btn danger" id="btn-remove" onclick="selectRemove()">Silme Modu</button>
-          <button class="action-btn secondary" onclick="confirmSetup()">Yerleşimi Bitir</button>
-          <button class="action-btn light" onclick="resetAll()">Baştan Başlat</button>
-        </div>
-
-        <div class="info-block">
-          <strong>Aktif seçim:</strong> <span id="selectedInfo">Yok</span><br>
-          <strong>Beyaz şah:</strong> <span id="whiteKingCount">0</span><br>
-          <strong>Siyah şah:</strong> <span id="blackKingCount">0</span>
-        </div>
+      <div class="topbar">
+        <div class="badge" id="status">Durum: Hazır</div>
+        <div class="badge" id="turnInfo">Sıra: Beyaz</div>
+        <div class="badge" id="scoreInfo">Puan: Beyaz 0 / 39 — Siyah 0 / 39</div>
+        <div class="badge clock-badge" id="whiteClock">Beyaz 01:00</div>
+        <div class="badge clock-badge" id="blackClock">Siyah 01:00</div>
       </div>
 
-      <div class="board-wrap">
-        <div class="files-row">
-          <div></div><div>a</div><div>b</div><div>c</div><div>d</div><div>e</div><div>f</div><div>g</div><div>h</div><div></div>
-        </div>
-        <div id="board" class="board"></div>
-        <div class="files-row">
-          <div></div><div>a</div><div>b</div><div>c</div><div>d</div><div>e</div><div>f</div><div>g</div><div>h</div><div></div>
-        </div>
-      </div>
+      <div class="layout">
+        <div class="panel">
+          <h2>Taş Seçimi</h2>
 
-      <div class="panel">
-        <h2>Kurallar</h2>
-        <ul class="rules">
-          <li>Beyaz sadece 1. ve 2. sıraya yerleşebilir.</li>
-          <li>Siyah sadece 7. ve 8. sıraya yerleşebilir.</li>
-          <li>Toplam taş puanı en fazla 39 olabilir.</li>
-          <li>Her oyuncu tam olarak 1 şah koyabilir.</li>
-          <li>Silme modunda sadece kendi taşını silebilirsin.</li>
-        </ul>
+          <div class="piece-grid">
+            <button class="piece-btn" id="btn-p" onclick="selectPiece('p')">♟ Piyon (1)</button>
+            <button class="piece-btn" id="btn-n" onclick="selectPiece('n')">♞ At (3)</button>
+            <button class="piece-btn" id="btn-b" onclick="selectPiece('b')">♝ Fil (3)</button>
+            <button class="piece-btn" id="btn-r" onclick="selectPiece('r')">♜ Kale (5)</button>
+            <button class="piece-btn" id="btn-q" onclick="selectPiece('q')">♛ Vezir (9)</button>
+            <button class="piece-btn" id="btn-k" onclick="selectPiece('k')">♚ Şah (0)</button>
+          </div>
 
-        <div class="legend">
-          <strong>Puanlar:</strong><br>
-          Piyon=1, At=3, Fil=3, Kale=5, Vezir=9, Şah=0
+          <div class="actions">
+            <button class="action-btn danger" id="btn-remove" onclick="selectRemove()">Silme Modu</button>
+            <button class="action-btn secondary" onclick="confirmSetup()">Yerleşimi Bitir</button>
+            <button class="action-btn light" onclick="resetAll()">Baştan Başlat</button>
+          </div>
+
+          <div class="info-block">
+            <strong>Aktif seçim:</strong> <span id="selectedInfo">Yok</span><br>
+            <strong>Beyaz şah:</strong> <span id="whiteKingCount">0</span><br>
+            <strong>Siyah şah:</strong> <span id="blackKingCount">0</span>
+          </div>
         </div>
 
-        <div class="message" id="messageBox">Mesaj: Hazır.</div>
+        <div class="board-wrap">
+          <div class="files-row">
+            <div></div><div>a</div><div>b</div><div>c</div><div>d</div><div>e</div><div>f</div><div>g</div><div>h</div><div></div>
+          </div>
+
+          <div class="board-frame">
+            <div class="rank-col">
+              <div>8</div><div>7</div><div>6</div><div>5</div><div>4</div><div>3</div><div>2</div><div>1</div>
+            </div>
+
+            <div id="board" class="board"></div>
+
+            <div class="rank-col">
+              <div>8</div><div>7</div><div>6</div><div>5</div><div>4</div><div>3</div><div>2</div><div>1</div>
+            </div>
+          </div>
+
+          <div class="files-row">
+            <div></div><div>a</div><div>b</div><div>c</div><div>d</div><div>e</div><div>f</div><div>g</div><div>h</div><div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Kurallar</h2>
+          <ul class="rules">
+            <li>Beyaz sadece 1. ve 2. sıraya yerleşebilir.</li>
+            <li>Siyah sadece 7. ve 8. sıraya yerleşebilir.</li>
+            <li>Toplam taş puanı en fazla 39 olabilir.</li>
+            <li>Her oyuncu tam olarak 1 şah koyabilir.</li>
+            <li>Yerleşim bittikten sonra normal satranç kuralları geçerlidir.</li>
+          </ul>
+
+          <div class="legend">
+            <strong>Puanlar:</strong><br>
+            Piyon=1, At=3, Fil=3, Kale=5, Vezir=9, Şah=0
+          </div>
+
+          <div class="message" id="messageBox">Mesaj: Hazır.</div>
+        </div>
       </div>
     </div>
   </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
 
   <script>
     const pieceValues = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
@@ -316,18 +492,50 @@
       b: { p: "♟", n: "♞", b: "♝", r: "♜", q: "♛", k: "♚" }
     };
 
-    let boardState = Array.from({ length: 8 }, () => Array(8).fill(null));
-    let phase = "white_setup";
-    let selectedPiece = null;
-    let removeMode = false;
-    let scores = { w: 0, b: 0 };
+    let boardState;
+    let scores;
+    let phase;
+    let selectedPiece;
+    let removeMode;
+    let selectedSquare;
+    let legalTargets;
+    let game;
+
+    let whiteSetupTime = 60;
+    let blackSetupTime = 60;
+    let whitePlayTime = 300;
+    let blackPlayTime = 300;
+    let timerId = null;
+
+    function emptyBoard() {
+      return Array.from({ length: 8 }, () => Array(8).fill(null));
+    }
+
+    function initState() {
+      boardState = emptyBoard();
+      scores = { w: 0, b: 0 };
+      phase = "home";
+      selectedPiece = null;
+      removeMode = false;
+      selectedSquare = null;
+      legalTargets = [];
+      game = null;
+      whiteSetupTime = 60;
+      blackSetupTime = 60;
+      whitePlayTime = 300;
+      blackPlayTime = 300;
+      stopTimer();
+    }
 
     function setMessage(text) {
       document.getElementById("messageBox").textContent = "Mesaj: " + text;
     }
 
     function currentColor() {
-      return phase === "white_setup" ? "w" : "b";
+      if (phase === "white_setup") return "w";
+      if (phase === "black_setup") return "b";
+      if (phase === "play") return game.turn();
+      return "w";
     }
 
     function colorName(color) {
@@ -336,6 +544,18 @@
 
     function squareToCoord(r, c) {
       return "abcdefgh"[c] + (8 - r);
+    }
+
+    function coordToSquare(coord) {
+      const c = "abcdefgh".indexOf(coord[0]);
+      const r = 8 - parseInt(coord[1], 10);
+      return { r, c };
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, "0");
+      const s = (sec % 60).toString().padStart(2, "0");
+      return `${m}:${s}`;
     }
 
     function countKings(color) {
@@ -366,6 +586,38 @@
       return false;
     }
 
+    function clearSelection() {
+      selectedSquare = null;
+      legalTargets = [];
+    }
+
+    function updateClocks() {
+      const whiteClock = document.getElementById("whiteClock");
+      const blackClock = document.getElementById("blackClock");
+
+      if (phase === "white_setup") {
+        whiteClock.textContent = "Beyaz " + formatTime(whiteSetupTime);
+        blackClock.textContent = "Siyah " + formatTime(blackSetupTime);
+      } else if (phase === "black_setup") {
+        whiteClock.textContent = "Beyaz " + formatTime(whiteSetupTime);
+        blackClock.textContent = "Siyah " + formatTime(blackSetupTime);
+      } else {
+        whiteClock.textContent = "Beyaz " + formatTime(whitePlayTime);
+        blackClock.textContent = "Siyah " + formatTime(blackPlayTime);
+      }
+
+      whiteClock.classList.remove("active-clock");
+      blackClock.classList.remove("active-clock");
+
+      if (phase === "white_setup") whiteClock.classList.add("active-clock");
+      if (phase === "black_setup") blackClock.classList.add("active-clock");
+
+      if (phase === "play") {
+        if (game.turn() === "w") whiteClock.classList.add("active-clock");
+        else blackClock.classList.add("active-clock");
+      }
+    }
+
     function updateUI() {
       const status = document.getElementById("status");
       const turnInfo = document.getElementById("turnInfo");
@@ -378,17 +630,23 @@
       } else if (phase === "black_setup") {
         status.textContent = "Durum: Siyah yerleşim yapıyor";
         turnInfo.textContent = "Sıra: Siyah";
+      } else if (phase === "play") {
+        status.textContent = "Durum: Oyun başladı";
+        turnInfo.textContent = "Sıra: " + colorName(game.turn());
+      } else if (phase === "gameover") {
+        status.textContent = "Durum: Oyun bitti";
       } else {
-        status.textContent = "Durum: Yerleşim tamamlandı";
-        turnInfo.textContent = "Sıra: Oyun aşaması henüz bağlı değil";
+        status.textContent = "Durum: Hazır";
       }
 
       scoreInfo.textContent = `Puan: Beyaz ${scores.w} / 39 — Siyah ${scores.b} / 39`;
 
-      if (removeMode) {
+      if (removeMode && (phase === "white_setup" || phase === "black_setup")) {
         selectedInfo.textContent = "Silme modu";
-      } else if (selectedPiece) {
+      } else if (selectedPiece && (phase === "white_setup" || phase === "black_setup")) {
         selectedInfo.textContent = pieceNames[selectedPiece];
+      } else if (selectedSquare && phase === "play") {
+        selectedInfo.textContent = selectedSquare;
       } else {
         selectedInfo.textContent = "Yok";
       }
@@ -398,18 +656,21 @@
 
       document.querySelectorAll(".piece-btn, #btn-remove").forEach(btn => btn.classList.remove("selected"));
 
-      if (removeMode) {
-        document.getElementById("btn-remove").classList.add("selected");
-      } else if (selectedPiece) {
-        const btn = document.getElementById("btn-" + selectedPiece);
-        if (btn) btn.classList.add("selected");
+      if (phase === "white_setup" || phase === "black_setup") {
+        if (removeMode) {
+          document.getElementById("btn-remove").classList.add("selected");
+        } else if (selectedPiece) {
+          const btn = document.getElementById("btn-" + selectedPiece);
+          if (btn) btn.classList.add("selected");
+        }
       }
+
+      updateClocks();
     }
 
     function drawBoard() {
       const board = document.getElementById("board");
       board.innerHTML = "";
-      const activeColor = currentColor();
 
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
@@ -417,25 +678,46 @@
           const isLight = (r + c) % 2 === 0;
           cell.className = "cell " + (isLight ? "light-square" : "dark-square");
 
-          if ((phase === "white_setup" || phase === "black_setup") && allowedRow(r, activeColor)) {
+          const coord = squareToCoord(r, c);
+
+          if ((phase === "white_setup" || phase === "black_setup") && allowedRow(r, currentColor())) {
             cell.classList.add("allowed");
           }
 
+          if (selectedSquare === coord) {
+            cell.classList.add("selected-square");
+          }
+
+          const targetData = legalTargets.find(t => t.to === coord);
+          if (targetData) {
+            if (targetData.flags.includes("c") || targetData.flags.includes("e")) {
+              cell.classList.add("capture-ring");
+            } else {
+              cell.classList.add("move-dot");
+            }
+          }
+
           const piece = boardState[r][c];
-          cell.textContent = piece ? symbols[piece.color][piece.type] : "";
+          if (piece) {
+            const pieceEl = document.createElement("div");
+            pieceEl.className = "piece";
+            pieceEl.textContent = symbols[piece.color][piece.type];
+            cell.appendChild(pieceEl);
+          }
+
+          const coordEl = document.createElement("div");
+          coordEl.className = "coord";
+          coordEl.textContent = coord;
+          cell.appendChild(coordEl);
+
           cell.onclick = () => handleCellClick(r, c);
-
-          const coord = document.createElement("div");
-          coord.className = "coord";
-          coord.textContent = squareToCoord(r, c);
-          cell.appendChild(coord);
-
           board.appendChild(cell);
         }
       }
     }
 
     function selectPiece(piece) {
+      if (!(phase === "white_setup" || phase === "black_setup")) return;
       selectedPiece = piece;
       removeMode = false;
       updateUI();
@@ -443,18 +725,49 @@
     }
 
     function selectRemove() {
+      if (!(phase === "white_setup" || phase === "black_setup")) return;
       removeMode = true;
       selectedPiece = null;
       updateUI();
       drawBoard();
     }
 
-    function handleCellClick(r, c) {
-      if (phase !== "white_setup" && phase !== "black_setup") {
-        setMessage("Bu sürümde sadece yerleşim kısmı aktif.");
-        return;
+    function ensureKing(color) {
+      if (countKings(color) === 1) return;
+
+      const preferred = color === "w"
+        ? ["e1", "d1", "c1", "f1", "e2", "d2", "c2", "f2"]
+        : ["e8", "d8", "c8", "f8", "e7", "d7", "c7", "f7"];
+
+      for (const sq of preferred) {
+        const { r, c } = coordToSquare(sq);
+        const existing = boardState[r][c];
+        if (!existing) {
+          boardState[r][c] = { color, type: "k" };
+          recalcScores();
+          return;
+        }
+        if (existing.color === color) {
+          scores[color] -= pieceValues[existing.type];
+          boardState[r][c] = { color, type: "k" };
+          recalcScores();
+          return;
+        }
       }
 
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (!allowedRow(r, color)) continue;
+          if (!boardState[r][c]) {
+            boardState[r][c] = { color, type: "k" };
+            recalcScores();
+            return;
+          }
+        }
+      }
+    }
+
+    function handleSetupClick(r, c) {
       const color = currentColor();
       const square = squareToCoord(r, c);
 
@@ -474,6 +787,7 @@
           setMessage("Sadece kendi taşını silebilirsin.");
           return;
         }
+
         boardState[r][c] = null;
         recalcScores();
         updateUI();
@@ -496,11 +810,7 @@
       }
 
       let nextScore = scores[color];
-
-      if (existing && existing.color === color) {
-        nextScore -= pieceValues[existing.type];
-      }
-
+      if (existing && existing.color === color) nextScore -= pieceValues[existing.type];
       nextScore += pieceValues[selectedPiece];
 
       if (nextScore > 39) {
@@ -520,15 +830,79 @@
       setMessage(square + " karesine " + pieceNames[selectedPiece] + " yerleştirildi.");
     }
 
+    function buildFenFromBoard() {
+      let fen = "";
+
+      for (let r = 0; r < 8; r++) {
+        let empty = 0;
+        for (let c = 0; c < 8; c++) {
+          const piece = boardState[r][c];
+          if (!piece) {
+            empty++;
+          } else {
+            if (empty > 0) {
+              fen += empty;
+              empty = 0;
+            }
+            const symbol = piece.color === "w"
+              ? piece.type.toUpperCase()
+              : piece.type.toLowerCase();
+            fen += symbol;
+          }
+        }
+        if (empty > 0) fen += empty;
+        if (r < 7) fen += "/";
+      }
+
+      fen += " w - - 0 1";
+      return fen;
+    }
+
+    function syncBoardFromGame() {
+      boardState = emptyBoard();
+      const gBoard = game.board();
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const piece = gBoard[r][c];
+          if (!piece) continue;
+          boardState[r][c] = { color: piece.color, type: piece.type };
+        }
+      }
+
+      recalcScores();
+    }
+
+    function startPlayPhase() {
+      ensureKing("w");
+      ensureKing("b");
+
+      const fen = buildFenFromBoard();
+      game = new Chess(fen);
+
+      phase = "play";
+      selectedPiece = null;
+      removeMode = false;
+      clearSelection();
+      whitePlayTime = 300;
+      blackPlayTime = 300;
+
+      updateUI();
+      drawBoard();
+      setMessage("Oyun başladı.");
+    }
+
     function confirmSetup() {
       if (phase === "white_setup") {
         if (countKings("w") !== 1) {
           setMessage("Beyaz tam olarak 1 şah koymak zorunda.");
           return;
         }
+
         phase = "black_setup";
         selectedPiece = null;
         removeMode = false;
+        clearSelection();
         updateUI();
         drawBoard();
         setMessage("Şimdi siyah yerleşim yapacak.");
@@ -540,28 +914,210 @@
           setMessage("Siyah tam olarak 1 şah koymak zorunda.");
           return;
         }
-        phase = "done";
-        selectedPiece = null;
-        removeMode = false;
-        updateUI();
-        drawBoard();
-        setMessage("Yerleşim tamamlandı. Sonraki adım chess.js ile hamle sistemi bağlamak.");
+
+        startPlayPhase();
       }
     }
 
-    function resetAll() {
-      boardState = Array.from({ length: 8 }, () => Array(8).fill(null));
+    function finishSetupByTimer(color) {
+      ensureKing(color);
+
+      if (color === "w" && phase === "white_setup") {
+        phase = "black_setup";
+        selectedPiece = null;
+        removeMode = false;
+        clearSelection();
+        updateUI();
+        drawBoard();
+        setMessage("Beyazın süresi bitti. Şimdi siyah yerleşim yapacak.");
+        return;
+      }
+
+      if (color === "b" && phase === "black_setup") {
+        startPlayPhase();
+        setMessage("Siyahın süresi bitti. Oyun başladı.");
+      }
+    }
+
+    function endGame(reason) {
+      phase = "gameover";
+      stopTimer();
+      clearSelection();
+      updateUI();
+      drawBoard();
+      setMessage(reason);
+    }
+
+    function handlePlayClick(r, c) {
+      if (phase !== "play") return;
+
+      const coord = squareToCoord(r, c);
+      const clickedPiece = boardState[r][c];
+      const turn = game.turn();
+
+      const matchingMove = legalTargets.find(m => m.to === coord);
+      if (selectedSquare && matchingMove) {
+        const move = game.move({
+          from: selectedSquare,
+          to: coord,
+          promotion: "q"
+        });
+
+        if (!move) {
+          setMessage("Geçersiz hamle.");
+          clearSelection();
+          updateUI();
+          drawBoard();
+          return;
+        }
+
+        syncBoardFromGame();
+        clearSelection();
+
+        if (game.in_checkmate()) {
+          endGame("Şah mat! Kazanan: " + colorName(move.color === "w" ? "w" : "b"));
+          return;
+        }
+
+        if (game.in_draw()) {
+          endGame("Oyun berabere.");
+          return;
+        }
+
+        if (game.in_check()) {
+          setMessage("Şah! Sıra: " + colorName(game.turn()));
+        } else {
+          setMessage(move.from + " → " + move.to + " hamlesi yapıldı.");
+        }
+
+        updateUI();
+        drawBoard();
+        return;
+      }
+
+      if (clickedPiece && clickedPiece.color === turn) {
+        selectedSquare = coord;
+        legalTargets = game.moves({ square: coord, verbose: true });
+        updateUI();
+        drawBoard();
+        return;
+      }
+
+      clearSelection();
+      updateUI();
+      drawBoard();
+    }
+
+    function handleCellClick(r, c) {
+      if (phase === "white_setup" || phase === "black_setup") {
+        handleSetupClick(r, c);
+        return;
+      }
+
+      if (phase === "play") {
+        handlePlayClick(r, c);
+        return;
+      }
+
+      if (phase === "gameover") {
+        setMessage("Oyun bitti. Yeniden başlatmak için Baştan Başlat'a bas.");
+      }
+    }
+
+    function tick() {
+      if (phase === "white_setup") {
+        whiteSetupTime--;
+        if (whiteSetupTime <= 0) {
+          whiteSetupTime = 0;
+          updateClocks();
+          finishSetupByTimer("w");
+          return;
+        }
+      } else if (phase === "black_setup") {
+        blackSetupTime--;
+        if (blackSetupTime <= 0) {
+          blackSetupTime = 0;
+          updateClocks();
+          finishSetupByTimer("b");
+          return;
+        }
+      } else if (phase === "play") {
+        if (game.turn() === "w") {
+          whitePlayTime--;
+          if (whitePlayTime <= 0) {
+            whitePlayTime = 0;
+            updateClocks();
+            endGame("Süre bitti. Kazanan: Siyah");
+            return;
+          }
+        } else {
+          blackPlayTime--;
+          if (blackPlayTime <= 0) {
+            blackPlayTime = 0;
+            updateClocks();
+            endGame("Süre bitti. Kazanan: Beyaz");
+            return;
+          }
+        }
+      }
+
+      updateClocks();
+    }
+
+    function stopTimer() {
+      if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+      }
+    }
+
+    function startTimer() {
+      stopTimer();
+      timerId = setInterval(tick, 1000);
+    }
+
+    function startMatch() {
+      document.getElementById("homeScreen").classList.add("hidden");
+      document.getElementById("gameScreen").classList.remove("hidden");
+
+      boardState = emptyBoard();
+      scores = { w: 0, b: 0 };
       phase = "white_setup";
       selectedPiece = null;
       removeMode = false;
-      scores = { w: 0, b: 0 };
+      clearSelection();
+      game = null;
+      whiteSetupTime = 60;
+      blackSetupTime = 60;
+      whitePlayTime = 300;
+      blackPlayTime = 300;
+
       updateUI();
       drawBoard();
-      setMessage("Tahta sıfırlandı.");
+      setMessage("Beyaz yerleşime başladı.");
+      startTimer();
     }
 
-    updateUI();
-    drawBoard();
+    function resetAll() {
+      boardState = emptyBoard();
+      scores = { w: 0, b: 0 };
+      phase = "white_setup";
+      selectedPiece = null;
+      removeMode = false;
+      clearSelection();
+      game = null;
+      whiteSetupTime = 60;
+      blackSetupTime = 60;
+      whitePlayTime = 300;
+      blackPlayTime = 300;
+
+      updateUI();
+      drawBoard();
+      setMessage("Tahta sıfırlandı. Beyaz yeniden yerleşiyor.");
+      startTimer();
+    }
+
+    initState();
   </script>
 </body>
 </html>
